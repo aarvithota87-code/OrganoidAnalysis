@@ -8,7 +8,6 @@ a = Analysis(
     binaries=[],
     datas=[
         ('templates', 'templates'),
-        ('static', 'static'),
         ('methods_explanation.html', '.'),
         ('organoid_analysis.py', '.'),
         ('organoid_analysis_watershed.py', '.'),
