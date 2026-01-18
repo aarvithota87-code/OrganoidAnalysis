@@ -1,0 +1,9 @@
+Flask>=2.0.0
+opencv-python>=4.5.0
+numpy>=1.21.0
+# Optional deep learning dependencies (methods have fallbacks if not installed):
+# tensorflow>=2.8.0  # For U-Net method
+# stardist>=0.8.0    # For StarDist method
+# csbdeep>=0.7.0     # Required by StarDist
+# cellpose>=2.0.0    # For Cellpose method
+

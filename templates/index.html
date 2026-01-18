@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organoid Analysis Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0d1117',
+                        card: '#161b22',
+                        border: '#30363d',
+                        primary: '#58a6ff',
+                        secondary: '#238636',
+                        accent: '#a371f7'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+        }
+
+        .loader {
+            border: 4px solid #30363d;
+            border-top: 4px solid #58a6ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen font-sans antialiased selection:bg-primary selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <h1 class="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Organoid Analysis
+            </h1>
+            <div class="flex items-center gap-4">
+                <a href="/methods" target="_blank"
+                    class="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Compare Methods
+                </a>
+                <div class="text-sm text-gray-500">v2.1.0</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Controls Section -->
+        <section class="glass-panel rounded-xl p-6 shadow-2xl">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+
+                <!-- File Upload -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-300">Upload Images</label>
+                    <label
+                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-lg cursor-pointer hover:bg-card/50 transition-colors group">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg class="w-8 h-8 mb-3 text-gray-400 group-hover:text-primary transition-colors"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                </path>
+                            </svg>
+                            <p class="mb-2 text-sm text-gray-400"><span class="font-semibold text-primary">Click to
+                                    upload</span></p>
+                            <p class="text-xs text-gray-500">Accepted image formats (.jpg, .png)</p>
+                        </div>
+                        <input id="imageInput" type="file" multiple class="hidden" accept="image/*" />
+                    </label>
+                    <div id="fileCount" class="text-xs text-center text-gray-500 h-4"></div>
+                </div>
+
+                <!-- Analysis Method -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-300">Analysis Method</label>
+                    <div class="relative">
+                        <select id="methodSelect"
+                            class="block w-full h-12 px-4 bg-card border border-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary text-gray-300">
+                            <option value="basic">Basic Thresholding (Otsu)</option>
+                            <option value="watershed">Watershed Segmentation (Recommended for Clumps)</option>
+                            <option value="hough">Hough Circle Transform (Best for Overlaps/Volume)</option>
+                            <option value="stardist">StarDist (Deep Learning - Requires TensorFlow)</option>
+                            <option value="unet">U-Net (Deep Learning Segmentation - TensorFlow/Keras)</option>
+                            <option value="morphology">Advanced Morphology & Cell Count (MOrgAna/OSCAR Inspired)
+                            </option>
+                            <option value="arivis">ZEISS arivis Pro (3D Volumetric Simulation)</option>
+                            <option value="assayscope">AssayScope (High-Throughput / Homogeneity)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p id="methodDesc" class="text-xs text-gray-500">
+                        Simple intensity cutoff. Fast but merges touching objects.
+                    </p>
+                </div>
+
+                <!-- Action -->
+                <div>
+                    <button id="analyzeBtn"
+                        class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-blue-500/20 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Analyze Data
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <div id="loader" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader mb-4"></div>
+            <p class="text-gray-400 animate-pulse">Running Computer Vision Algorithms...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsArea" class="hidden space-y-8">
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="statsGrid">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-panel p-4 rounded-xl flex flex-col">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-200">Growth Trend (Count)</h3>
+                    <div class="h-64 relative w-full mb-4">
+                        <canvas id="countChart"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-auto pt-2 border-t border-gray-700/50">
+                        <strong>Interpretation:</strong> Tracks the number of detected organoids over time. An
+                        increasing count suggests proliferation, while a stable or decreasing count (alongside
+                        increasing size) typically indicates fusion.
+                    </p>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex flex-col">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-200" id="sizeChartTitle">Size Distribution</h3>
+                    <div class="h-64 relative w-full mb-4">
+                        <canvas id="sizeChart"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-auto pt-2 border-t border-gray-700/50">
+                        <strong>Interpretation:</strong> Measures the biomass expansion. An upward trend confirms the
+                        organoids are growing in mass/volume, which is the primary indicator of healthy culture
+                        development.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Visual Gallery -->
+            <section class="space-y-4">
+                <h2 class="text-2xl font-bold text-white">Visual Analysis</h2>
+                <p class="text-sm text-gray-400">
+                    Process output showing detected structures.
+                    <span class="text-green-400">Green</span>/<span class="text-red-400">Red</span>/<span
+                        class="text-cyan-400">Cyan</span> contours mark organoid boundaries.
+                    <span class="text-pink-400">Magenta</span> circles (Hough) indicate predicted 3D spheres, useful for
+                    spotting overlaps.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="galleryGrid">
+                    <!-- Injected via JS -->
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // --- DOM Elements ---
+        const imageInput = document.getElementById('imageInput');
+        const fileCount = document.getElementById('fileCount');
+        const methodSelect = document.getElementById('methodSelect');
+        const methodDesc = document.getElementById('methodDesc');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loader = document.getElementById('loader');
+        const resultsArea = document.getElementById('resultsArea');
+        const galleryGrid = document.getElementById('galleryGrid');
+        const statsGrid = document.getElementById('statsGrid');
+
+        // --- State ---
+        let charts = {};
+
+        // --- Event Listeners ---
+        imageInput.addEventListener('change', () => {
+            const files = imageInput.files;
+            fileCount.innerHTML = ''; // Clear previous content
+
+            if (files.length > 0) {
+                // Remove fixed height constraint from container if it exists
+                fileCount.classList.remove('h-4');
+                fileCount.classList.add('mt-2');
+
+                const list = document.createElement('div');
+                list.className = 'flex flex-col gap-1 text-center';
+
+                for (let i = 0; i < files.length; i++) {
+                    const item = document.createElement('div');
+                    item.textContent = files[i].name;
+                    item.className = 'text-xs text-gray-400 font-mono';
+                    list.appendChild(item);
+                }
+                fileCount.appendChild(list);
+            } else {
+                fileCount.classList.add('h-4'); // Restore spacer
+            }
+        });
+
+        methodSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            let text = "";
+            if (val === 'basic') text = "Simple intensity cutoff. Fast but merges touching objects.";
+            if (val === 'watershed') text = "Advanced splitting of touching objects using intensity peaks.";
+            if (val === 'hough') text = "Mathematical detection of circular shapes. Best for heavily overlapping 3D organoids.";
+            if (val === 'stardist') text = "State-of-the-art AI model for star-convex object detection. Best for irregular shapes.";
+            if (val === 'unet') text = "U-Net deep learning model for semantic segmentation. Encoder-decoder architecture with skip connections. Best for precise boundary detection.";
+            if (val === 'morphology') text = "Extracts advanced shape metrics (Solidity, Eccentricity) and estimates Cell Count using regression models.";
+            if (val === 'arivis') text = "Simulates the 3D volumetric segmentation workflow of ZEISS arivis Pro, creating wireframe models.";
+            if (val === 'assayscope') text = "Statistical screening workflow focusing on population homogeneity and outlier detection.";
+            methodDesc.textContent = text;
+        });
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (imageInput.files.length === 0) {
+                alert("Please select images first.");
+                return;
+            }
+
+            // UI Updates
+            analyzeBtn.disabled = true;
+            loader.classList.remove('hidden');
+            resultsArea.classList.add('hidden');
+
+            // Form Data
+            const formData = new FormData();
+            for (let i = 0; i < imageInput.files.length; i++) {
+                formData.append('images[]', imageInput.files[i]);
+            }
+            formData.append('method', methodSelect.value);
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    renderResults(data);
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("An error occurred during analysis.");
+            } finally {
+                analyzeBtn.disabled = false;
+                loader.classList.add('hidden');
+            }
+        });
+
+        function renderResults(data) {
+            resultsArea.classList.remove('hidden');
+            galleryGrid.innerHTML = '';
+            statsGrid.innerHTML = '';
+
+            const results = data.results;
+
+            // 1. Render Stats Cards
+            // Total Count, Avg Growth...
+            // Let's just show summary of Day 4 (or last day)
+            const lastDay = results[results.length - 1];
+
+            const createCard = (label, value, sub, color) => `
+                <div class="glass-panel p-4 rounded-xl border border-${color}-500/30">
+                    <p class="text-gray-400 text-sm">${label}</p>
+                    <p class="text-3xl font-bold text-white mt-1">${value}</p>
+                    ${sub ? `<p class="text-xs text-${color}-400 mt-1">${sub}</p>` : ''}
+                </div>
+            `;
+
+            // Calculate overall growth
+            const firstCount = results[0].count;
+            const lastCount = lastDay.count;
+            const growth = firstCount > 0 ? ((lastCount - firstCount) / firstCount * 100).toFixed(1) : 0;
+
+            // Calculate daily breakdown
+            let dailyBreakdown = "From Day 1";
+            if (results.length > 1) {
+                let lines = [];
+                for (let i = 1; i < results.length; i++) {
+                    const prev = results[i - 1].count;
+                    const curr = results[i].count;
+                    const pct = prev > 0 ? ((curr - prev) / prev * 100).toFixed(1) : 0;
+                    const sign = pct > 0 ? '+' : '';
+                    const colorClass = pct >= 0 ? "text-green-400" : "text-red-400";
+                    lines.push(`D${results[i - 1].day}→D${results[i].day}: <span class="${colorClass}">${sign}${pct}%</span>`);
+                }
+                dailyBreakdown = lines.join(' &bull; '); // Bullet separator
+            }
+
+            statsGrid.innerHTML += createCard("Latest Count", lastCount, `Day ${lastDay.day}`, 'primary');
+            statsGrid.innerHTML += createCard("Total Growth", (growth > 0 ? '+' : '') + growth + '%', dailyBreakdown, growth >= 0 ? 'secondary' : 'red');
+
+            if (data.method === 'hough') {
+                statsGrid.innerHTML += createCard("Est. Volume", Math.round(lastDay.total_volume).toLocaleString(), "pixels³", 'accent');
+            } else if (data.method === 'morphology') {
+                statsGrid.innerHTML += createCard("Est. Cell Count", Math.round(lastDay.est_total_cells).toLocaleString(), "Cells (OSCAR model)", 'accent');
+                statsGrid.innerHTML += createCard("Solidity", lastDay.avg_solidity.toFixed(3), "1.0 = Solid", 'yellow');
+                statsGrid.innerHTML += createCard("Eccentricity", lastDay.avg_eccentricity.toFixed(3), "0 = Circle, 1 = Line", 'yellow');
+            } else if (data.method === 'arivis') {
+                statsGrid.innerHTML += createCard("Total Volume", Math.round(lastDay.est_volume).toLocaleString(), "pixels³ (Simulated)", 'accent');
+                statsGrid.innerHTML += createCard("Avg Volume", Math.round(lastDay.avg_volume).toLocaleString(), "pixels³", 'accent');
+            } else if (data.method === 'assayscope') {
+                statsGrid.innerHTML += createCard("Avg Radius", Math.round(lastDay.mean_radius).toFixed(1), "pixels", 'accent');
+                statsGrid.innerHTML += createCard("Homogeneity", lastDay.homogeneity_score.toFixed(1) + "%", "100 - CV%", 'green');
+            } else {
+                statsGrid.innerHTML += createCard("Avg Size", Math.round(lastDay.avg_size).toLocaleString(), "pixels²", 'accent');
+            }
+
+            if (lastDay.avg_circularity && !['morphology', 'arivis', 'assayscope', 'unet'].includes(data.method)) {
+                statsGrid.innerHTML += createCard("Circularity", lastDay.avg_circularity.toFixed(3), "1.0 = Circle", 'yellow');
+            }
+
+
+            // 2. Render Charts
+            const days = results.map(r => `Day ${r.day}`);
+            const counts = results.map(r => r.count);
+
+            // Size data depends on method
+            let sizeData, sizeLabel;
+            if (data.method === 'hough') {
+                sizeData = results.map(r => r.total_volume);
+                sizeLabel = "Total Volume (px³)";
+                document.getElementById('sizeChartTitle').textContent = "Biomass / Volume Trend";
+            } else if (data.method === 'unet') {
+                sizeData = results.map(r => r.avg_size);
+                sizeLabel = "Avg Area (px²)";
+                document.getElementById('sizeChartTitle').textContent = "Average Size Trend (U-Net)";
+            } else if (data.method === 'morphology') {
+                sizeData = results.map(r => r.est_total_cells);
+                sizeLabel = "Est. Total Cells";
+                document.getElementById('sizeChartTitle').textContent = "Cell Proliferation (OSCAR Est.)";
+            } else if (data.method === 'arivis') {
+                sizeData = results.map(r => r.est_volume);
+                sizeLabel = "3D Total Volume (px³)";
+                document.getElementById('sizeChartTitle').textContent = "Volumetric Expansion (Arivis Sim)";
+            } else if (data.method === 'assayscope') {
+                sizeData = results.map(r => r.mean_radius);
+                sizeLabel = "Mean Radius (px)";
+                document.getElementById('sizeChartTitle').textContent = "Population Radius Trend (AssayScope)";
+            } else {
+                sizeData = results.map(r => r.avg_size);
+                sizeLabel = "Avg Area (px²)";
+                document.getElementById('sizeChartTitle').textContent = "Average Size Trend";
+            }
+
+            updateChart('countChart', 'line', days, [{
+                label: 'Organoid Count',
+                data: counts,
+                borderColor: '#58a6ff',
+                backgroundColor: 'rgba(88, 166, 255, 0.2)',
+                fill: true,
+                tension: 0.3
+            }]);
+
+            updateChart('sizeChart', 'bar', days, [{
+                label: sizeLabel,
+                data: sizeData,
+                backgroundColor: ['hough', 'morphology', 'arivis', 'unet'].includes(data.method) ? '#a371f7' : (data.method === 'assayscope' ? '#238636' : '#238636'),
+                borderRadius: 4
+            }]);
+
+            // 3. Render Gallery
+            let markingDesc = "Contours outlining detected organoids.";
+            if (data.method === 'hough') markingDesc = "Magenta circles mark the estimated circumference of spherical organoids, revealing overlaps.";
+            if (data.method === 'watershed') markingDesc = "Red contours separate touching organoids based on intensity peaks.";
+            if (data.method === 'stardist') markingDesc = "Cyan contours show organoids segmented by star-convex geometry.";
+            if (data.method === 'unet') markingDesc = "Green contours show organoids segmented by U-Net deep learning model. Heatmap overlay shows probability map.";
+            if (data.method === 'morphology') markingDesc = "Contours colored by Solidity (Blue=Solid, Green/Yellow=Irregular/Budding).";
+            if (data.method === 'arivis') markingDesc = "Yellow boundaries with internal crosshairs simulating 3D centroids.";
+            if (data.method === 'assayscope') markingDesc = "Bounding boxes simulating high-throughput screening detection.";
+
+            results.forEach(res => {
+                const item = document.createElement('div');
+                item.className = "glass-panel rounded-lg overflow-hidden group hover:border-primary transition-colors flex flex-col";
+                item.innerHTML = `
+                    <div class="relative aspect-[4/3] bg-black">
+                        <img src="${res.debug_url}" class="absolute inset-0 w-full h-full object-contain" alt="Day ${res.day}">
+                        <div class="absolute bottom-0 left-0 right-0 bg-black/70 p-2 text-xs text-white backdrop-blur-sm">
+                            <div class="flex justify-between">
+                                <span class="font-bold">Day ${res.day}</span>
+                                <span class="text-primary">${res.count} items</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-card/30 flex-grow border-t border-gray-800">
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            <strong>Analysis:</strong> ${markingDesc}
+                        </p>
+                    </div>
+                `;
+                galleryGrid.appendChild(item);
+            });
+        }
+
+        function updateChart(id, type, labels, datasets) {
+            const ctx = document.getElementById(id).getContext('2d');
+
+            if (charts[id]) {
+                charts[id].destroy();
+            }
+
+            charts[id] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#c9d1d9' } }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#8b949e' }
+                        },
+                        x: {
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#8b949e' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

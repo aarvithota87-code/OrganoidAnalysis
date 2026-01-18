@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Flask
+instance/
+.webassets-cache
+
+# Debug outputs (generated at runtime)
+debug_output/
+debug_output_*/
+static/uploads/debug_output*/
+static/uploads/*.jpg
+static/uploads/*.png
+static/uploads/*.jpeg
+static/results/*
+
+# Sample/test images
+day*.jpg
+day*.png
+day*.jpeg
+
+# Generated comparison files
+analysis_comparison*.html
+analysis_comprehensive.html
+
+# PyInstaller
+build/
+dist/
+*.spec.bak
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+venv/
+env/
+ENV/
+
+# Windows build artifacts
+*.wixobj
+*.wixpdb
+*.msi

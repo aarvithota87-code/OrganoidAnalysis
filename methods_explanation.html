@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organoid Analysis Methods Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0d1117',
+                        card: '#161b22',
+                        border: '#30363d',
+                        primary: '#58a6ff',
+                        secondary: '#238636',
+                        accent: '#a371f7'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+        }
+
+        .method-badge {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 font-sans">
+    <div class="max-w-5xl mx-auto space-y-12">
+
+        <!-- Header -->
+        <header class="text-center space-y-4">
+            <h1
+                class="text-4xl font-bold bg-gradient-to-r from-primary via-white to-accent bg-clip-text text-transparent">
+                Analysis Methods & Performance Guide
+            </h1>
+            <p class="text-gray-400 max-w-2xl mx-auto">
+                A technical breakdown of the computer vision and AI algorithms used in the Organoid Analysis platform,
+                explaining their mechanisms, use-cases, and comparative performance.
+            </p>
+        </header>
+
+        <!-- Comparison Matrix -->
+        <section class="glass-panel rounded-xl overflow-hidden p-6 mb-12">
+            <h2 class="text-2xl font-bold text-white mb-6">🏆 Performance Verdict</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-gray-400 text-sm">
+                            <th class="p-3 font-semibold">Method</th>
+                            <th class="p-3 font-semibold">Technique</th>
+                            <th class="p-3 font-semibold">Separation Power</th>
+                            <th class="p-3 font-semibold">Processing Speed</th>
+                            <th class="p-3 font-semibold text-right">Best Implementation?</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-gray-800">
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="p-3 font-bold text-primary">Watershed</td>
+                            <td class="p-3">Intensity Topography</td>
+                            <td class="p-3 text-green-400">High</td>
+                            <td class="p-3 text-green-400">Fast</td>
+                            <td class="p-3 text-right">✅ <strong>Best General Purpose</strong></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="p-3 font-bold text-accent">Hough Transform</td>
+                            <td class="p-3">Geometric Voting</td>
+                            <td class="p-3 text-yellow-400">Medium (Overlap)</td>
+                            <td class="p-3 text-yellow-400">Medium</td>
+                            <td class="p-3 text-right">✅ <strong>Best for 3D Volume</strong></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="p-3 font-bold text-cyan-400">StarDist / Geo</td>
+                            <td class="p-3">Convex Geometry</td>
+                            <td class="p-3 text-green-400">Very High</td>
+                            <td class="p-3 text-red-400">Slow</td>
+                            <td class="p-3 text-right"><strong>Best for Dense Clumps</strong></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="p-3 font-bold text-gray-400">Basic Otsu</td>
+                            <td class="p-3">Histogram Threshold</td>
+                            <td class="p-3 text-red-500">None (Merges)</td>
+                            <td class="p-3 text-green-400">Instant</td>
+                            <td class="p-3 text-right">Only for Sparse Data</td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="p-3 font-bold text-pink-400">Morphology</td>
+                            <td class="p-3">Feature Regression</td>
+                            <td class="p-3 text-green-400">High (Watershed Base)</td>
+                            <td class="p-3 text-yellow-400">Medium</td>
+                            <td class="p-3 text-right"><strong>Best for Biological Insights</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Detailed Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- 1. Basic -->
+            <div class="glass-panel p-6 rounded-xl space-y-4 border-l-4 border-l-gray-600">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-xl font-bold text-white">Basic Thresholding</h3>
+                    <span class="method-badge bg-gray-700 text-gray-300">Baseline</span>
+                </div>
+                <p class="text-sm text-gray-400">
+                    <strong>How it works:</strong> Calculates a global intensity value (Otsu's method) that best
+                    separates foreground pixels from background pixels.
+                </p>
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-green-400 font-bold">✓ Pros:</span> Computationally instant. Robust for single,
+                        high-contrast organoids.</p>
+                    <p><span class="text-red-400 font-bold">✗ Cons:</span> Fails completely when organoids touch,
+                        merging them into one large blob.</p>
+                </div>
+            </div>
+
+            <!-- 2. Watershed -->
+            <div class="glass-panel p-6 rounded-xl space-y-4 border-l-4 border-l-primary">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-xl font-bold text-white">Watershed Segmentation</h3>
+                    <span class="method-badge bg-primary/20 text-primary">Recommended</span>
+                </div>
+                <p class="text-sm text-gray-400">
+                    <strong>How it works:</strong> Treats image intensity like a topographic map. It finds "peaks"
+                    (bright centers) and floods "valleys" (dark edges) to form basins. Where basins meet, it builds a
+                    dam (boundary).
+                </p>
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-green-400 font-bold">✓ Pros:</span> Excellent at splitting touching objects.
+                        Mathematically robust.</p>
+                    <p><span class="text-yellow-400 font-bold">⚠ Note:</span> Can over-segment (split one object into
+                        two) if texture is rough.</p>
+                </div>
+            </div>
+
+            <!-- 3. Hough -->
+            <div class="glass-panel p-6 rounded-xl space-y-4 border-l-4 border-l-accent">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-xl font-bold text-white">Hough Circle Transform</h3>
+                    <span class="method-badge bg-accent/20 text-accent">Volume Focused</span>
+                </div>
+                <p class="text-sm text-gray-400">
+                    <strong>How it works:</strong> Uses a voting system in parameter space. Edge pixels "vote" for
+                    potential circle centers. The algorithm detects objects even if they are partially occluded or
+                    overlapping.
+                </p>
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-green-400 font-bold">✓ Pros:</span> The only method to detect 3D overlap (one
+                        behind another). Allows spherical volume calculation.</p>
+                    <p><span class="text-red-400 font-bold">✗ Cons:</span> Assumes organoids are perfect circles.</p>
+                </div>
+            </div>
+
+            <!-- 4. StarDist/Geo -->
+            <div class="glass-panel p-6 rounded-xl space-y-4 border-l-4 border-l-cyan-400">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-xl font-bold text-white">StarDist (Geometric)</h3>
+                    <span class="method-badge bg-cyan-900/30 text-cyan-400">AI / Hybrid</span>
+                </div>
+                <p class="text-sm text-gray-400">
+                    <strong>How it works:</strong> Designed to mimic a Deep Learning model that predicts "star-convex"
+                    polygons. This implementation uses aggressive distance transforms to find geometric centers of
+                    round-ish objects.
+                </p>
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-green-400 font-bold">✓ Pros:</span> Best-in-class for dense, crowded fields of
+                        view. Handles irregular but convex shapes better than Hough.</p>
+                </div>
+            </div>
+
+            <!-- 5. Morphology -->
+            <div class="glass-panel p-6 rounded-xl space-y-4 border-l-4 border-l-pink-500">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-xl font-bold text-white">Advanced Morphology</h3>
+                    <span class="method-badge bg-pink-900/30 text-pink-400">Bio-Insights</span>
+                </div>
+                <p class="text-sm text-gray-400">
+                    <strong>How it works:</strong> Post-processing workflow inspired by MOrgAna/OSCAR. It extracts
+                    features like Convex Hull, Solidity, and fitted Ellipses to classify shape health.
+                </p>
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-green-400 font-bold">✓ Pros:</span> Provides biological context (Is it dying?
+                        Is it budding?). Estimates cell counts.</p>
+                    <p><span class="text-gray-500 font-bold">ℹ Use for:</span> Drug screening or phenotypic analysis.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 6. Commercial Sims -->
+            <div class="glass-panel p-6 rounded-xl space-y-4 border-l-4 border-l-indigo-500">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-xl font-bold text-white">Commercial Simulations</h3>
+                    <span class="method-badge bg-indigo-900/30 text-indigo-400">Workflow Sims</span>
+                </div>
+                <p class="text-sm text-gray-400">
+                    <strong>arivis Pro & AssayScope:</strong> These modes replicate the workflows of high-end commercial
+                    software. Arivis focuses on 3D reconstruction visualization, while AssayScope focuses on statistical
+                    QC (Homogeneity).
+                </p>
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-green-400 font-bold">✓ Pros:</span> useful for generating reports that align
+                        with industry-standard formats.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+
+</html>
