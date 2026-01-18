@@ -29,13 +29,21 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     
-    - name: Build with PyInstaller
+    - name: Build with PyInstaller (OneFile - Single EXE)
+      run: |
+        pyinstaller desktop_app_onefile.spec --clean
+    
+    - name: Build with PyInstaller (OneDir - Folder)
       run: |
         pyinstaller desktop_app.spec --clean
     
-    - name: Create ZIP archive
+    - name: Create ZIP archive for OneDir version
       run: |
-        Compress-Archive -Path dist\OrganoidAnalysis\* -DestinationPath OrganoidAnalysis-Windows.zip -Force
+        Compress-Archive -Path dist\OrganoidAnalysis\* -DestinationPath OrganoidAnalysis-Windows-Folder.zip -Force
+    
+    - name: Copy OneFile EXE for distribution
+      run: |
+        Copy-Item dist\OrganoidAnalysis.exe -Destination OrganoidAnalysis.exe
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -43,14 +51,18 @@ jobs:
         name: OrganoidAnalysis-Windows
         path: |
           dist/OrganoidAnalysis/
-          OrganoidAnalysis-Windows.zip
+          dist/OrganoidAnalysis.exe
+          OrganoidAnalysis-Windows-Folder.zip
+          OrganoidAnalysis.exe
         retention-days: 30
     
     - name: Create Release (on tag)
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: OrganoidAnalysis-Windows.zip
+        files: |
+          OrganoidAnalysis.exe
+          OrganoidAnalysis-Windows-Folder.zip
         draft: false
         prerelease: false
       env:
