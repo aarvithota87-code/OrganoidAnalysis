@@ -31,7 +31,7 @@ jobs:
     
     - name: Build with PyInstaller
       run: |
-        pyinstaller desktop_app.spec --onedir --noconsole --clean
+        pyinstaller desktop_app.spec --clean
     
     - name: Create ZIP archive
       run: |
